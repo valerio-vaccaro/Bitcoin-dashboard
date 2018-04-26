@@ -7,35 +7,46 @@ library(igraph)
 library(jsonlite)
 library(httr)
 
+setwd("~/r-studio-workspace/bitcoin/app")
+
 # Get data
 temp <- fromJSON("https://apiv2.bitcoinaverage.com/indices/global/history/BTCUSD?period=daily&format=json")
 temp <- do.call(rbind,temp)
-data.BTCUSD.daily <- as.data.frame(temp,stringsAsFactors=FALSE)
+data.BTCUSD.daily <- as.data.frame(t(temp),stringsAsFactors=FALSE)
 data.BTCUSD.daily$time <- as.POSIXct(unlist(data.BTCUSD.daily$time))
 data.BTCUSD.daily$average <- unlist(data.BTCUSD.daily$average)
 data.BTCUSD.daily$cur <- "USD"
 
 temp <- fromJSON("https://apiv2.bitcoinaverage.com/indices/global/history/BTCEUR?period=daily&format=json")
 temp <- do.call(rbind,temp)
-data.BTCEUR.daily <- as.data.frame(temp,stringsAsFactors=FALSE)
+data.BTCEUR.daily <- as.data.frame(t(temp),stringsAsFactors=FALSE)
 data.BTCEUR.daily$time <- as.POSIXct(unlist(data.BTCEUR.daily$time))
 data.BTCEUR.daily$average <- unlist(data.BTCEUR.daily$average)
 data.BTCEUR.daily$cur <- "EUR"
 
 temp <- fromJSON("https://apiv2.bitcoinaverage.com/indices/global/history/BTCUSD?period=monthly&format=json")
 temp <- do.call(rbind,temp)
-data.daily <- rbind(data.BTCUSD.daily, data.BTCEUR.daily)
-data.BTCUSD.monthly <- as.data.frame(temp,stringsAsFactors=FALSE)
+data.BTCUSD.monthly <- as.data.frame(t(temp),stringsAsFactors=FALSE)
 data.BTCUSD.monthly$time <- as.POSIXct(unlist(data.BTCUSD.monthly$time))
 data.BTCUSD.monthly$average <- unlist(data.BTCUSD.monthly$average)
 data.BTCUSD.monthly$cur <- "USD"
 
 temp <- fromJSON("https://apiv2.bitcoinaverage.com/indices/global/history/BTCEUR?period=monthly&format=json")
 temp <- do.call(rbind,temp)
-data.BTCEUR.monthly <- as.data.frame(temp,stringsAsFactors=FALSE)
+data.BTCEUR.monthly <- as.data.frame(t(temp),stringsAsFactors=FALSE)
 data.BTCEUR.monthly$time <- as.POSIXct(unlist(data.BTCEUR.monthly$time))
 data.BTCEUR.monthly$average <- unlist(data.BTCEUR.monthly$average)
 data.BTCEUR.monthly$cur <- "EUR"
+
+data.BTCEUR.monthly$average <- as.numeric(data.BTCEUR.monthly$average)
+data.BTCUSD.monthly$average <- as.numeric(data.BTCUSD.monthly$average)
+data.BTCEUR.daily$average <- as.numeric(data.BTCEUR.daily$average)
+data.BTCUSD.daily$average <- as.numeric(data.BTCUSD.daily$average)
+data.BTCEUR.monthly$time <- as.POSIXct(data.BTCEUR.monthly$time)
+data.BTCUSD.monthly$time <- as.POSIXct(data.BTCUSD.monthly$time)
+data.BTCEUR.daily$time <- as.POSIXct(data.BTCEUR.daily$time)
+data.BTCUSD.daily$time <- as.POSIXct(data.BTCUSD.daily$time)
+data.daily <- rbind(data.BTCUSD.daily, data.BTCEUR.daily)
 data.monthly <- rbind(data.BTCUSD.monthly[, c("average","time","cur")], data.BTCEUR.monthly[, c("average","time","cur")])
 
 save(data.daily, file="./data/data.daily.RData")
