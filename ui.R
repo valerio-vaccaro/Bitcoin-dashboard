@@ -104,6 +104,14 @@ ui <- dashboardPage(
                         ),
                         # credits content
                         tabItem(tabName = "credits",
+                                tags$a(
+                                   href="https://github.com/valerio-vaccaro/Bitcoin-dashboard/",
+                                   tags$img(
+                                      style="position: absolute; top: 10; right: 0; border: 0;",
+                                      src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png",
+                                      alt="Fork me on GitHub"
+                                   )
+                                ),
                                 h2("Bitcoin activity"),
                                 "Bitcoin activity is a dashboard developed in R and shiny and able to show:", br(),
                                 "- the value of Bitcoin in EUR and USD in the last 24 hours and in last 30 days", br(),
