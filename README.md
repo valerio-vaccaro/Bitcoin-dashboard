@@ -9,8 +9,27 @@ Bitcoin-dashboard is able to show:
 - the performance of mempool in last hours and the prices of transactions still present in mempool
 - the transactions connected with one bitcoin wallet address.
 
+# Working example
+You can check a working example of the dashboard [here](http://vaccaro.tech:3838/bitcoin/).
+
+## Price dashboard 
+![Price dashboard](https://raw.githubusercontent.com/valerio-vaccaro/Bitcoin-dashboard/master/screenshots/1-price.png "Price dashboard")
+
+## Mining dashboard
+![Mining dashboard](https://raw.githubusercontent.com/valerio-vaccaro/Bitcoin-dashboard/master/screenshots/2-mining.png "Mining dashboard")
+
+## Blocks dashboard
+![Blocks dashboard](https://raw.githubusercontent.com/valerio-vaccaro/Bitcoin-dashboard/master/screenshots/3-blocks.png "Blocks dashboard")
+
+## Mempool dashboard
+![Price dashboard](https://raw.githubusercontent.com/valerio-vaccaro/Bitcoin-dashboard/master/screenshots/4-mempool.png "Mempool dashboard")
+
 # Make it work
-Execute the script get_data.R every hour in order to fetch new datasets, the enjoy the charts available with this simple shiny app.
+Follows this steps in order to clone this project:
+
+* Clone the repository in your shiny app folder.
+* Execute the script get_data.R every hour in order to fetch new datasets - maybe calling rscript from cron.
+* Enjoy the charts available with this simple shiny app.
 
 All the code is available at https://github.com/valerio-vaccaro/Bitcoin-dashboard
 
