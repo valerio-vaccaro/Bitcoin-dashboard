@@ -1,5 +1,7 @@
 # server.R
 library(ggplot2)
+library(ggpmisc)
+library(anytime)
 library(grid)
 library(stringr)
 library(RJSONIO)
@@ -7,22 +9,9 @@ library(Rbitcoin)
 library(plyr)
 library(igraph)
 library(plyr)
+library(lubridate)
 
 # load data
-load("./data/data.daily.RData")
-load("./data/data.monthly.RData")
-
-data.BTCEUR.daily <- data.daily[data.daily$cur=="EUR", ]
-data.BTCUSD.daily <- data.daily[data.daily$cur=="USD", ]
-act_eur <- data.BTCEUR.daily[1, ]$average
-act_usd <- data.BTCUSD.daily[1, ]$average
-daily_eur <- round(mean(data.BTCEUR.daily$average), digits = 2)
-daily_usd <- round(mean(data.BTCUSD.daily$average), digits = 2)
-data.BTCEUR.monthly <- data.monthly[data.monthly$cur=="EUR", ]
-data.BTCUSD.monthly <- data.monthly[data.monthly$cur=="USD", ]
-monthly_eur <- round(mean(data.BTCEUR.monthly$average), digits = 2)
-monthly_usd <- round(mean(data.BTCUSD.monthly$average), digits = 2)
-
 load("./data/block_size_btc.com.RData")
 
 actual_size <- max(dataset$height)
@@ -40,61 +29,139 @@ load("./data/mempool.RData")
 mempool$delta <- as.numeric(as.POSIXct(mempool$time) - max(as.POSIXct(mempool$time)))
 mempool$has_witness <- as.factor(mempool$has_witness)
 
+today <- as.numeric(as.POSIXct(Sys.Date()))*1000
+load("./data/price_usd_day.RData")
+load("./data/price_usd_week.RData")
+load("./data/price_usd_month.RData")
+daily_usd <- mean(price_usd_day$value)
+weekly_usd <- mean(price_usd_week$value)
+monthly_usd <- mean(price_usd_month$value)
+price_usd_day$hour <- as.factor(hour(price_usd_day$timestamp))
+price_usd_week$day <- as.factor(day(price_usd_week$timestamp))
+price_usd_month$day <- as.factor(day(price_usd_month$timestamp))
+
 server <- function(input, output) {
    
    output$dateBox <- renderInfoBox({
       infoBox(
-         "Monthly average", paste(monthly_eur,"EUR"),paste(monthly_usd, "USD"), icon = icon("calendar"),
+         "Monthly average", paste(round(monthly_usd,3), "USD"), icon = icon("calendar"),
          color = "green"
       )
    })
    
    output$speedBox <- renderInfoBox({
       infoBox(
-         "Daily average",  paste(daily_eur,"EUR"),paste(daily_usd, "USD"), icon = icon("road"),
+         "Weekly average", paste(round(weekly_usd,3), "USD"), icon = icon("road"),
          color = "yellow"
       )
    })
    
    output$pulseBox <- renderInfoBox({
       infoBox(
-         "Actual value",  paste(act_eur,"EUR"),paste(act_usd, "USD"), icon = icon("heart"),
+         "Daily average", paste(round(daily_usd,3), "USD"), icon = icon("heart"),
          color = "red"
       )
    })
 
-   output$ma <- renderPlot({
-      ggplot(data.monthly, aes(x=time, color=cur)) +
-         geom_line(aes(y=average)) +
-         geom_hline(aes(yintercept=act_eur), color="red", linetype="dotted")+
-         geom_hline(aes(yintercept=act_usd), color="red", linetype="dashed")+
-         geom_hline(aes(yintercept=daily_eur), color="yellow", linetype="dotted")+
-         geom_hline(aes(yintercept=daily_usd), color="yellow", linetype="dashed")+
-         geom_hline(aes(yintercept=monthly_eur), color="green", linetype="dotted")+
-         geom_hline(aes(yintercept=monthly_usd), color="green", linetype="dashed")
-   })
-   
-   output$mh <- renderPlot({
-      ggplot(data.monthly, aes(x=average, fill=cur)) +
-         geom_histogram() +
-         scale_y_continuous(labels = scales::percent)
-      
-   })
-   
-   output$da <- renderPlot({
-      ggplot(data.daily, aes(x=time, color=cur)) +
-         geom_line(aes(y=average)) +
-         geom_hline(aes(yintercept=act_eur), color="red", linetype="dotted")+
-         geom_hline(aes(yintercept=act_usd), color="red", linetype="dashed")+
-         geom_hline(aes(yintercept=daily_eur), color="yellow", linetype="dotted")+
-         geom_hline(aes(yintercept=daily_usd), color="yellow", linetype="dashed")+
-         geom_hline(aes(yintercept=monthly_eur), color="green", linetype="dotted")+
-         geom_hline(aes(yintercept=monthly_usd), color="green", linetype="dashed")
+   output$dp <- renderPlot({
+      ggplot(price_usd_day, aes(x=timestamp, y=value)) +
+         stat_smooth(
+            color = "#FC4E07", fill = "#FC4E07",
+            method = "loess"
+         ) +
+         geom_hline(aes(yintercept=daily_usd), color="red", linetype="dashed") +
+         geom_hline(aes(yintercept=weekly_usd), color="yellow", linetype="dashed") +
+         geom_hline(aes(yintercept=monthly_usd), color="green", linetype="dashed") +
+         geom_line() +
+         stat_peaks(colour = "red", span = 25) +
+         stat_peaks(geom = "text", colour = "red", span = 25, 
+                    vjust = -0.5, x.label.fmt = "%H:%M") +
+         stat_valleys(colour = "blue", span = 25) +
+         stat_valleys(geom = "text", colour = "blue", angle = 45, span = 25,
+                      vjust = 1.5, hjust = 1,  x.label.fmt = "%H:%M") +
+         annotate("text", x = max(price_usd_day$timestamp), y = Inf, label = paste0(as.Date(anytime(today/1000)), " - valeriovaccaro.it"),
+                  hjust=1.1, vjust=1.1, col="black", cex=4,
+                  fontface = "bold", alpha = 0.3) +
+         ggtitle("BTC price value - 1 day") +
+         labs(y="Value [USD]", x="Date")
    })
    
    output$dh <- renderPlot({
-      ggplot(data.daily, aes(x=average, fill=cur)) +
+      ggplot(price_usd_day, aes(x=value, fill=hour)) +
          geom_histogram() +
+         annotate("text", x = max(price_usd_day$value), y = Inf, label = paste0(as.Date(anytime(today/1000)), " - valeriovaccaro.it"),
+                  hjust=1.1, vjust=1.1, col="black", cex=4,
+                  fontface = "bold", alpha = 0.3) +
+         ggtitle("BTC price distribution - 1 day") +
+         labs(y="", x="Value [USD]") +
+         scale_y_continuous(labels = scales::percent)
+   })
+   
+   output$wp <- renderPlot({
+      ggplot(price_usd_week, aes(x=timestamp, y=value)) +
+         stat_smooth(
+            color = "#FC4E07", fill = "#FC4E07",
+            method = "loess"
+         ) +
+         geom_hline(aes(yintercept=daily_usd), color="red", linetype="dashed") +
+         geom_hline(aes(yintercept=weekly_usd), color="yellow", linetype="dashed") +
+         geom_hline(aes(yintercept=monthly_usd), color="green", linetype="dashed") +
+         geom_line() +
+         stat_peaks(colour = "red", span = 25) +
+         stat_peaks(geom = "text", colour = "red", span = 25, 
+                    vjust = -0.5, x.label.fmt = "%H:%M") +
+         stat_valleys(colour = "blue", span = 25) +
+         stat_valleys(geom = "text", colour = "blue", angle = 45, span = 25,
+                      vjust = 1.5, hjust = 1,  x.label.fmt = "%H:%M") +
+         annotate("text", x = max(price_usd_day$timestamp), y = Inf, label = paste0(as.Date(anytime(today/1000)), " - valeriovaccaro.it"),
+                  hjust=1.1, vjust=1.1, col="black", cex=4,
+                  fontface = "bold", alpha = 0.3) +
+         ggtitle("BTC price value - 1 week") +
+         labs(y="Value [USD]", x="Date")
+   })
+   
+   output$wh <- renderPlot({
+      ggplot(price_usd_week, aes(x=value, fill=day)) +
+         geom_histogram() +
+         annotate("text", x = max(price_usd_week$value), y = Inf, label = paste0(as.Date(anytime(today/1000)), " - valeriovaccaro.it"),
+                  hjust=1.1, vjust=1.1, col="black", cex=4,
+                  fontface = "bold", alpha = 0.3) +
+         ggtitle("BTC price distribution - 1 week") +
+         labs(y="", x="Value [USD]") +
+         scale_y_continuous(labels = scales::percent)
+   })
+   
+   output$mp <- renderPlot({
+      ggplot(price_usd_month, aes(x=timestamp, y=value)) +
+         stat_smooth(
+            color = "#FC4E07", fill = "#FC4E07",
+            method = "loess"
+         ) +
+         geom_hline(aes(yintercept=daily_usd), color="red", linetype="dashed") +
+         geom_hline(aes(yintercept=weekly_usd), color="yellow", linetype="dashed") +
+         geom_hline(aes(yintercept=monthly_usd), color="green", linetype="dashed") +
+         geom_line() +
+         stat_peaks(colour = "red", span = 25) +
+         stat_peaks(geom = "text", colour = "red", span = 25, 
+                    vjust = -0.5, x.label.fmt = "%d %H:%M") +
+         stat_valleys(colour = "blue", span = 25) +
+         stat_valleys(geom = "text", colour = "blue", angle = 45, span = 25,
+                      vjust = 1.5, hjust = 1,  x.label.fmt = "%H:%M") +
+         annotate("text", x = max(price_usd_day$timestamp), y = Inf, label = paste0(as.Date(anytime(today/1000)), " - valeriovaccaro.it"),
+                  hjust=1.1, vjust=1.1, col="black", cex=4,
+                  fontface = "bold", alpha = 0.3) +
+         ggtitle("BTC price value - 1 month") +
+         labs(y="Value [USD]", x="Date")
+   })
+   
+   output$mh <- renderPlot({
+      ggplot(price_usd_month, aes(x=value, fill=day)) +
+         geom_histogram() +
+         annotate("text", x = max(price_usd_month$value), y = Inf, label = paste0(as.Date(anytime(today/1000)), " - valeriovaccaro.it"),
+                  hjust=1.1, vjust=1.1, col="black", cex=4,
+                  fontface = "bold", alpha = 0.3) +
+         ggtitle("BTC price distribution - 1 month") +
+         labs(y="", x="Value [USD]") +
          scale_y_continuous(labels = scales::percent)
    })
    

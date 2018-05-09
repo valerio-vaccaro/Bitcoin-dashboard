@@ -27,13 +27,19 @@ ui <- dashboardPage(
                                 ),
                                 fluidRow(
                                         box(title = "Monthly activity", status = "primary", solidHeader = TRUE,
-                                            plotOutput("ma", height = 300) ),
+                                            plotOutput("mp", height = 300) ),
                                         box(title = "Monthly histogram", status = "primary", solidHeader = TRUE,
                                             plotOutput("mh", height = 300) ) 
                                 ),
                                 fluidRow(
+                                   box(title = "Weekly activity", status = "primary", solidHeader = TRUE,
+                                       plotOutput("wp", height = 300) ),
+                                   box(title = "Weekly histogram", status = "primary", solidHeader = TRUE,
+                                       plotOutput("wh", height = 300) )
+                                ),
+                                fluidRow(
                                         box(title = "Daily activity", status = "primary", solidHeader = TRUE,
-                                            plotOutput("da", height = 300) ),
+                                            plotOutput("dp", height = 300) ),
                                         box(title = "Daily histogram", status = "primary", solidHeader = TRUE,
                                             plotOutput("dh", height = 300) )
                                 )
@@ -114,12 +120,12 @@ ui <- dashboardPage(
                                 ),
                                 h2("Bitcoin activity"),
                                 "Bitcoin activity is a dashboard developed in R and shiny and able to show:", br(),
-                                "- the value of Bitcoin in EUR and USD in the last 24 hours and in last 30 days", br(),
+                                "- the value of Bitcoin in EUR and USD in the last day, last week and in last month", br(),
                                 "- the mining of Bitcoin in the last 24 hours and in last 10 days", br(),
                                 "- the performances of Bitcoin in terms of blocks free space and delay in the last 24 hours and in last 10 days", br(),
                                 "- the performance of mempool in last hours and the prices of transactions still present in mempool", br(),
                                 "- the transactions connected with one bitcoin wallet address.", br(), 
-                                br(),"The dataset is generate using free API from btc.com, blockchair.com and bitcoinaverage.com.", br(),
+                                br(),"The dataset is generate using free API from btc.com, blockchair.com and coinmarketcap.com", br(),
                                 br(),"All the code is available at", a("https://github.com/valerio-vaccaro/Bitcoin-dashboard"), br(),
                                 br(),"Copyright (c) 2017-2018 Valerio Vaccaro", a("http://www.valeriovaccaro.it"), br(),
                                 br(),"Permission is hereby granted, free of charge, to any person obtaining a copy", br(),

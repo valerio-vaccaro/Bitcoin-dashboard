@@ -9,49 +9,6 @@ library(httr)
 
 setwd("~/r-studio-workspace/bitcoin/app")
 
-# Get data
-temp <- fromJSON("https://apiv2.bitcoinaverage.com/indices/global/history/BTCUSD?period=daily&format=json")
-temp <- do.call(rbind,temp)
-data.BTCUSD.daily <- as.data.frame(t(temp),stringsAsFactors=FALSE)
-data.BTCUSD.daily$time <- as.POSIXct(unlist(data.BTCUSD.daily$time))
-data.BTCUSD.daily$average <- unlist(data.BTCUSD.daily$average)
-data.BTCUSD.daily$cur <- "USD"
-
-temp <- fromJSON("https://apiv2.bitcoinaverage.com/indices/global/history/BTCEUR?period=daily&format=json")
-temp <- do.call(rbind,temp)
-data.BTCEUR.daily <- as.data.frame(t(temp),stringsAsFactors=FALSE)
-data.BTCEUR.daily$time <- as.POSIXct(unlist(data.BTCEUR.daily$time))
-data.BTCEUR.daily$average <- unlist(data.BTCEUR.daily$average)
-data.BTCEUR.daily$cur <- "EUR"
-
-temp <- fromJSON("https://apiv2.bitcoinaverage.com/indices/global/history/BTCUSD?period=monthly&format=json")
-temp <- do.call(rbind,temp)
-data.BTCUSD.monthly <- as.data.frame(t(temp),stringsAsFactors=FALSE)
-data.BTCUSD.monthly$time <- as.POSIXct(unlist(data.BTCUSD.monthly$time))
-data.BTCUSD.monthly$average <- unlist(data.BTCUSD.monthly$average)
-data.BTCUSD.monthly$cur <- "USD"
-
-temp <- fromJSON("https://apiv2.bitcoinaverage.com/indices/global/history/BTCEUR?period=monthly&format=json")
-temp <- do.call(rbind,temp)
-data.BTCEUR.monthly <- as.data.frame(t(temp),stringsAsFactors=FALSE)
-data.BTCEUR.monthly$time <- as.POSIXct(unlist(data.BTCEUR.monthly$time))
-data.BTCEUR.monthly$average <- unlist(data.BTCEUR.monthly$average)
-data.BTCEUR.monthly$cur <- "EUR"
-
-data.BTCEUR.monthly$average <- as.numeric(data.BTCEUR.monthly$average)
-data.BTCUSD.monthly$average <- as.numeric(data.BTCUSD.monthly$average)
-data.BTCEUR.daily$average <- as.numeric(data.BTCEUR.daily$average)
-data.BTCUSD.daily$average <- as.numeric(data.BTCUSD.daily$average)
-data.BTCEUR.monthly$time <- as.POSIXct(data.BTCEUR.monthly$time)
-data.BTCUSD.monthly$time <- as.POSIXct(data.BTCUSD.monthly$time)
-data.BTCEUR.daily$time <- as.POSIXct(data.BTCEUR.daily$time)
-data.BTCUSD.daily$time <- as.POSIXct(data.BTCUSD.daily$time)
-data.daily <- rbind(data.BTCUSD.daily, data.BTCEUR.daily)
-data.monthly <- rbind(data.BTCUSD.monthly[, c("average","time","cur")], data.BTCEUR.monthly[, c("average","time","cur")])
-
-save(data.daily, file="./data/data.daily.RData")
-save(data.monthly, file="./data/data.monthly.RData")
-
 today <- Sys.Date()
 dataset <- NULL
 actual_size <- as.numeric(fromJSON('https://chain.api.btc.com/v3/block/latest')$data$height)
@@ -85,3 +42,30 @@ save(dataset, file="./data/block_size_btc.com.RData")
 
 mempool <- read.csv("https://api.blockchair.com/bitcoin/mempool/transactions?fields=block_id,id,hash,time,is_coinbase,input_count,output_count,cdd_total,input_total,input_total_usd,output_total,output_total_usd,fee,fee_usd,fee_per_kb,fee_per_kb_usd,fee_per_kwu,fee_per_kwu_usd,has_witness,size,weight,lock_time&export=csv")
 save(mempool, file="./data/mempool.RData")
+
+options(scipen = 999)
+today <- as.numeric(as.POSIXct(Sys.Date()))*1000
+yesterday <- as.numeric(as.POSIXct(Sys.Date()-1))*1000
+lastWeek <- as.numeric(as.POSIXct(Sys.Date()-7))*1000
+lastMonth <- as.numeric(as.POSIXct(Sys.Date()-31))*1000
+
+test <- fromJSON(paste0("https://graphs2.coinmarketcap.com/currencies/bitcoin/",yesterday,"/",today,"/"))
+price_usd_day <- as.data.frame(test$price_usd)
+if (nrow(price_usd_day) < 5) price_usd_day <- as.data.frame(matrix(unlist(test$price_usd), ncol = 2, byrow = TRUE))
+names(price_usd_day) <- c("timestamp","value")
+price_usd_day$timestamp <- anytime(price_usd_day$timestamp/1000)
+save(price_usd_day, file="./data/price_usd_day.RData")
+
+test2 <- fromJSON(paste0("https://graphs2.coinmarketcap.com/currencies/bitcoin/",lastWeek,"/",today,"/"))
+price_usd_week <- as.data.frame(test2$price_usd)
+if (nrow(price_usd_week) < 5) price_usd_week <- as.data.frame(matrix(unlist(test2$price_usd), ncol = 2, byrow = TRUE))
+names(price_usd_week) <- c("timestamp","value")
+price_usd_week$timestamp <- anytime(price_usd_week$timestamp/1000)
+save(price_usd_week, file="./data/price_usd_week.RData")
+
+test3 <- fromJSON(paste0("https://graphs2.coinmarketcap.com/currencies/bitcoin/",lastMonth,"/",today,"/"))
+price_usd_month <- as.data.frame(test3$price_usd)
+if (nrow(price_usd_month) < 5) price_usd_month <- as.data.frame(matrix(unlist(test3$price_usd), ncol = 2, byrow = TRUE))
+names(price_usd_month) <- c("timestamp","value")
+price_usd_month$timestamp <- anytime(price_usd_month$timestamp/1000)
+save(price_usd_month, file="./data/price_usd_month.RData")
