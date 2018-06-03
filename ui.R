@@ -48,10 +48,16 @@ ui <- dashboardPage(
                         # dashboard content
                         tabItem(tabName = "bitcoin_pools_dashboard",
                                 fluidRow(
-                                   box(title = "Ten days activity", status = "primary", solidHeader = TRUE,
-                                       plotOutput("b10", height = 300) ),
-                                   box(title = "Ten days histogram", status = "primary", solidHeader = TRUE,
-                                       plotOutput("bh10", height = 300) )
+                                   box(title = "Monthly activity", status = "primary", solidHeader = TRUE,
+                                       plotOutput("b30", height = 300) ),
+                                   box(title = "Monthly histogram", status = "primary", solidHeader = TRUE,
+                                       plotOutput("bh30", height = 300) )
+                                ),
+                                fluidRow(
+                                   box(title = "Weekly activity", status = "primary", solidHeader = TRUE,
+                                       plotOutput("b7", height = 300) ),
+                                   box(title = "Weekly histogram", status = "primary", solidHeader = TRUE,
+                                       plotOutput("bh7", height = 300) )
                                 ),
                                 fluidRow(
                                    box(title = "Daily activity", status = "primary", solidHeader = TRUE,
@@ -64,10 +70,16 @@ ui <- dashboardPage(
                         # dashboard content
                         tabItem(tabName = "bitcoin_blocks_dashboard",
                                 fluidRow(
-                                   box(title = "Ten days free space", status = "primary", solidHeader = TRUE,
-                                       plotOutput("f10", height = 300) ),
-                                   box(title = "Ten days speed", status = "primary", solidHeader = TRUE,
-                                       plotOutput("s10", height = 300) )
+                                   box(title = "Monthly free space", status = "primary", solidHeader = TRUE,
+                                       plotOutput("f30", height = 300) ),
+                                   box(title = "Monthly speed", status = "primary", solidHeader = TRUE,
+                                       plotOutput("s30", height = 300) )
+                                ),
+                                fluidRow(
+                                   box(title = "Weekly free space", status = "primary", solidHeader = TRUE,
+                                       plotOutput("f7", height = 300) ),
+                                   box(title = "Weekly speed", status = "primary", solidHeader = TRUE,
+                                       plotOutput("s7", height = 300) )
                                 ),
                                 fluidRow(
                                    box(title = "Daily free space", status = "primary", solidHeader = TRUE,

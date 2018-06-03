@@ -16,14 +16,24 @@ load("./data/block_size_btc.com.RData")
 
 actual_size <- max(dataset$height)
 filter_100_days <- dataset$height > actual_size-(100*144)-1
+filter_7_days <- dataset$height > actual_size-(7*144)-1
 filter_10_days <- dataset$height > actual_size-(10*144)-1
+filter_30_days <- dataset$height > actual_size-(30*144)-1
 filter_1_day <- dataset$height > actual_size-(1*144)-1
+
+size_7_days <- mean(dataset[filter_7_days & dataset$size_mb>1, ]$size_mb)
 size_10_days <- mean(dataset[filter_10_days & dataset$size_mb>1, ]$size_mb)
+size_30_days <- mean(dataset[filter_30_days & dataset$size_mb>1, ]$size_mb)
 size_1_days <- mean(dataset[filter_1_day & dataset$size_mb>1, ]$size_mb)
 
-max_size <- mean(dataset[dataset$height > actual_size-(10*144)-1 & dataset$size_mb>1, ]$size_mb)
-filter_free_10_days <- dataset$height > actual_size-(10*144)-1 & (max_size-dataset$size_mb)>0.1
-filter_free_1_day <- dataset$height > actual_size-(1*144)-1 & (max_size-dataset$size_mb)>0.1
+max_size_7 <- mean(dataset[dataset$height > actual_size-(7*144)-1 & dataset$size_mb>1, ]$size_mb)
+max_size_10 <- mean(dataset[dataset$height > actual_size-(10*144)-1 & dataset$size_mb>1, ]$size_mb)
+max_size_30 <- mean(dataset[dataset$height > actual_size-(30*144)-1 & dataset$size_mb>1, ]$size_mb)
+
+filter_free_7_days <- dataset$height > actual_size-(7*144)-1 & (max_size_7-dataset$size_mb)>0.1
+filter_free_10_days <- dataset$height > actual_size-(10*144)-1 & (max_size_10-dataset$size_mb)>0.1
+filter_free_30_days <- dataset$height > actual_size-(30*144)-1 & (max_size_30-dataset$size_mb)>0.1
+filter_free_1_day <- dataset$height > actual_size-(1*144)-1 & (max_size_7-dataset$size_mb)>0.1
 
 load("./data/mempool.RData")
 mempool$delta <- as.numeric(as.POSIXct(mempool$time) - max(as.POSIXct(mempool$time)))
@@ -83,7 +93,8 @@ server <- function(input, output) {
                   hjust=1.1, vjust=1.1, col="black", cex=4,
                   fontface = "bold", alpha = 0.3) +
          ggtitle("BTC price value - 1 day") +
-         labs(y="Value [USD]", x="Date")
+         labs(y="Value [USD]", x="Date") +
+         theme(axis.text.x = element_text(angle=45, hjust=1))
    })
    
    output$dh <- renderPlot({
@@ -94,7 +105,8 @@ server <- function(input, output) {
                   fontface = "bold", alpha = 0.3) +
          ggtitle("BTC price distribution - 1 day") +
          labs(y="", x="Value [USD]") +
-         scale_y_continuous(labels = scales::percent)
+         scale_y_continuous(labels = scales::percent) +
+         theme(axis.text.x = element_text(angle=45, hjust=1))
    })
    
    output$wp <- renderPlot({
@@ -117,7 +129,8 @@ server <- function(input, output) {
                   hjust=1.1, vjust=1.1, col="black", cex=4,
                   fontface = "bold", alpha = 0.3) +
          ggtitle("BTC price value - 1 week") +
-         labs(y="Value [USD]", x="Date")
+         labs(y="Value [USD]", x="Date") +
+         theme(axis.text.x = element_text(angle=45, hjust=1))
    })
    
    output$wh <- renderPlot({
@@ -128,7 +141,8 @@ server <- function(input, output) {
                   fontface = "bold", alpha = 0.3) +
          ggtitle("BTC price distribution - 1 week") +
          labs(y="", x="Value [USD]") +
-         scale_y_continuous(labels = scales::percent)
+         scale_y_continuous(labels = scales::percent) +
+         theme(axis.text.x = element_text(angle=45, hjust=1))
    })
    
    output$mp <- renderPlot({
@@ -151,7 +165,8 @@ server <- function(input, output) {
                   hjust=1.1, vjust=1.1, col="black", cex=4,
                   fontface = "bold", alpha = 0.3) +
          ggtitle("BTC price value - 1 month") +
-         labs(y="Value [USD]", x="Date")
+         labs(y="Value [USD]", x="Date") +
+         theme(axis.text.x = element_text(angle=45, hjust=1))
    })
    
    output$mh <- renderPlot({
@@ -162,15 +177,42 @@ server <- function(input, output) {
                   fontface = "bold", alpha = 0.3) +
          ggtitle("BTC price distribution - 1 month") +
          labs(y="", x="Value [USD]") +
-         scale_y_continuous(labels = scales::percent)
+         scale_y_continuous(labels = scales::percent) +
+         theme(axis.text.x = element_text(angle=45, hjust=1))
    })
    
-   output$b10 <- renderPlot({
-      ggplot(dataset[filter_10_days, ], aes(x=as.factor(pool), y=size_mb,  alpha=0.01)) +
+   # output$b10 <- renderPlot({
+   #    ggplot(dataset[filter_10_days, ], aes(x=as.factor(pool), y=size_mb,  alpha=0.01)) +
+   #       geom_point(aes(color=pool)) +
+   #       geom_hline(yintercept=1) +
+   #       geom_text(data=data.frame(x=0,y=1),  aes(x, y), label="1MB", vjust=+2, hjust=-1) +
+   #       labs(title="Distribution of blocks per pool - 10 days analyzed.",
+   #            x ="Pool", y = "Block size (MB)") +
+   #       theme(axis.text.x = element_text(angle=45, hjust=1)) +
+   #       theme(legend.position="none") +
+   #       annotate("text", x = Inf, y = Inf, label = paste0("valeriovaccaro.it"),
+   #                hjust=1.1, vjust=1.1, col="black", cex=4,
+   #                fontface = "bold", alpha = 0.3)
+   # })
+   # 
+   # output$bh10 <- renderPlot({
+   #    ggplot(dataset[filter_10_days, ], aes(x=pool)) +
+   #       geom_bar(mapping = aes(x = pool, y = ..count.., fill = pool)) +
+   #       labs(title="Distribution of mined blocks per pool - 10 days analyzed.",
+   #            x ="Pool", y = "# blocks") +
+   #       theme(axis.text.x = element_text(angle=45, hjust=1)) +
+   #       theme(legend.position="none") +
+   #       annotate("text", x = Inf, y = Inf, label = paste0("valeriovaccaro.it"),
+   #                hjust=1.1, vjust=1.1, col="black", cex=4,
+   #                fontface = "bold", alpha = 0.3)
+   # })
+   
+   output$b30 <- renderPlot({
+      ggplot(dataset[filter_30_days, ], aes(x=as.factor(pool), y=size_mb,  alpha=0.01)) +
          geom_point(aes(color=pool)) +
          geom_hline(yintercept=1) +
          geom_text(data=data.frame(x=0,y=1),  aes(x, y), label="1MB", vjust=+2, hjust=-1) +
-         labs(title="Distribution of blocks per pool - 10 days analyzed.",
+         labs(title="Distribution of blocks per pool - 30 days analyzed.",
               x ="Pool", y = "Block size (MB)") +
          theme(axis.text.x = element_text(angle=45, hjust=1)) +
          theme(legend.position="none") +
@@ -179,10 +221,36 @@ server <- function(input, output) {
                   fontface = "bold", alpha = 0.3)
    })
    
-   output$bh10 <- renderPlot({
-      ggplot(dataset[filter_10_days, ], aes(x=pool)) +
+   output$bh30 <- renderPlot({
+      ggplot(dataset[filter_30_days, ], aes(x=pool)) +
          geom_bar(mapping = aes(x = pool, y = ..count.., fill = pool)) +
-         labs(title="Distribution of mined blocks per pool - 10 days analyzed.",
+         labs(title="Distribution of mined blocks per pool - 30 days analyzed.",
+              x ="Pool", y = "# blocks") +
+         theme(axis.text.x = element_text(angle=45, hjust=1)) +
+         theme(legend.position="none") +
+         annotate("text", x = Inf, y = Inf, label = paste0("valeriovaccaro.it"),
+                  hjust=1.1, vjust=1.1, col="black", cex=4,
+                  fontface = "bold", alpha = 0.3)
+   })
+   
+   output$b7 <- renderPlot({
+      ggplot(dataset[filter_7_days, ], aes(x=as.factor(pool), y=size_mb,  alpha=0.01)) +
+         geom_point(aes(color=pool)) +
+         geom_hline(yintercept=1) +
+         geom_text(data=data.frame(x=0,y=1),  aes(x, y), label="1MB", vjust=+2, hjust=-1) +
+         labs(title="Distribution of blocks per pool - 7 days analyzed.",
+              x ="Pool", y = "Block size (MB)") +
+         theme(axis.text.x = element_text(angle=45, hjust=1)) +
+         theme(legend.position="none") +
+         annotate("text", x = Inf, y = Inf, label = paste0("valeriovaccaro.it"),
+                  hjust=1.1, vjust=1.1, col="black", cex=4,
+                  fontface = "bold", alpha = 0.3)
+   })
+   
+   output$bh7 <- renderPlot({
+      ggplot(dataset[filter_7_days, ], aes(x=pool)) +
+         geom_bar(mapping = aes(x = pool, y = ..count.., fill = pool)) +
+         labs(title="Distribution of mined blocks per pool - 7 days analyzed.",
               x ="Pool", y = "# blocks") +
          theme(axis.text.x = element_text(angle=45, hjust=1)) +
          theme(legend.position="none") +
@@ -196,7 +264,7 @@ server <- function(input, output) {
          geom_point(aes(color=pool)) +
          geom_hline(yintercept=1) +
          geom_text(data=data.frame(x=0,y=1),  aes(x, y), label="1MB", vjust=+2, hjust=-1) +
-         labs(title="Distribution of blocks per pool - 10 days analyzed.",
+         labs(title="Distribution of blocks per pool - 1 day analyzed.",
               x ="Pool", y = "Block size (MB)") +
          theme(axis.text.x = element_text(angle=45, hjust=1)) +
          theme(legend.position="none") +
@@ -208,7 +276,7 @@ server <- function(input, output) {
    output$bh1 <- renderPlot({
       ggplot(dataset[filter_1_day, ], aes(x=pool)) +
          geom_bar(mapping = aes(x = pool, y = ..count.., fill = pool)) +
-         labs(title="Distribution of mined blocks per pool - 10 days analyzed.",
+         labs(title="Distribution of mined blocks per pool - 1 day analyzed.",
               x ="Pool", y = "# blocks") +
          theme(axis.text.x = element_text(angle=45, hjust=1)) +
          theme(legend.position="none") +
@@ -217,48 +285,96 @@ server <- function(input, output) {
                   fontface = "bold", alpha = 0.3)
    })
    
+   
+   # output$s10 <- renderPlot({
+   #    ggplot(dataset[filter_10_days, ], aes(x=when, y=as.numeric(delta), color=size_mb,  alpha=0.01)) +
+   #       geom_point() +
+   #       geom_hline(yintercept=600, color="red") +
+   #       geom_smooth() +
+   #       labs(title="Block delay in 10 days",
+   #            x ="Timestamp of the block", y = "Delta from previouse block (s)") +
+   #       theme(axis.text.x = element_text(angle=45, hjust=1)) 
+   # })
+   # 
+   # output$f10 <- renderPlot({
+   #    ggplot(dataset[filter_free_10_days, ], aes(x=height, y=max_size-size_mb)) +
+   #       geom_point(aes(color=pool)) +
+   #       geom_hline(yintercept=1, color="red") +
+   #       theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) +
+   #       labs(title="Free space in blocks - 10 days analyzed.",
+   #            x ="Height", y = "Free space (MB)") +
+   #       annotate("text", x = Inf, y = Inf, label = paste0("valeriovaccaro.it"),
+   #                hjust=1.1, vjust=1.1, col="black", cex=4,
+   #                fontface = "bold", alpha = 0.3)
+   # })
+   
+   output$s30 <- renderPlot({
+      ggplot(dataset[filter_30_days, ], aes(x=when, y=as.numeric(delta), color=size_mb,  alpha=0.01)) +
+         geom_point() +
+         geom_hline(yintercept=600, color="red") +
+         geom_smooth() +
+         labs(title="Block delay in 30 days",
+              x ="Timestamp of the block", y = "Delta from previouse block (s)") +
+         theme(axis.text.x = element_text(angle=45, hjust=1)) 
+   })
+   
+   output$f30 <- renderPlot({
+      ggplot(dataset[filter_free_30_days, ], aes(x=height, y=max_size_30-size_mb)) +
+         geom_point(aes(color=pool)) +
+         geom_hline(yintercept=1, color="red") +
+         theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) +
+         labs(title="Free space in blocks - 30 days analyzed.",
+              x ="Height", y = "Free space (MB)") +
+         annotate("text", x = Inf, y = Inf, label = paste0("valeriovaccaro.it"),
+                  hjust=1.1, vjust=1.1, col="black", cex=4,
+                  fontface = "bold", alpha = 0.3) +
+         theme(axis.text.x = element_text(angle=45, hjust=1))
+   })
+   
+   output$s7 <- renderPlot({
+      ggplot(dataset[filter_7_days, ], aes(x=when, y=as.numeric(delta), color=size_mb,  alpha=0.01)) +
+         geom_point() +
+         geom_hline(yintercept=600, color="red") +
+         geom_smooth() +
+         labs(title="Block delay in 7 days",
+              x ="Timestamp of the block", y = "Delta from previouse block (s)") +
+         theme(axis.text.x = element_text(angle=45, hjust=1))
+   })
+   
+   output$f7 <- renderPlot({
+      ggplot(dataset[filter_free_7_days, ], aes(x=height, y=max_size_7-size_mb)) +
+         geom_point(aes(color=pool)) +
+         geom_hline(yintercept=1, color="red") +
+         theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) +
+         labs(title="Free space in blocks - 7 days analyzed.",
+              x ="Height", y = "Free space (MB)") +
+         annotate("text", x = Inf, y = Inf, label = paste0("valeriovaccaro.it"),
+                  hjust=1.1, vjust=1.1, col="black", cex=4,
+                  fontface = "bold", alpha = 0.3) +
+         theme(axis.text.x = element_text(angle=45, hjust=1))
+   })
+   
    output$s1 <- renderPlot({
       ggplot(dataset[filter_1_day, ], aes(x=when, y=as.numeric(delta), color=size_mb,  alpha=0.01)) +
          geom_point() +
          geom_hline(yintercept=600, color="red") +
          geom_smooth() +
-         labs(title="Block delay in 10 days",
+         labs(title="Block delay in 1 day",
               x ="Timestamp of the block", y = "Delta from previouse block (s)") +
          theme(axis.text.x = element_text(angle=45, hjust=1)) 
-   })
-   
-   output$s10 <- renderPlot({
-      ggplot(dataset[filter_10_days, ], aes(x=when, y=as.numeric(delta), color=size_mb,  alpha=0.01)) +
-         geom_point() +
-         geom_hline(yintercept=600, color="red") +
-         geom_smooth() +
-         labs(title="Block delay in 10 days",
-              x ="Timestamp of the block", y = "Delta from previouse block (s)") +
-         theme(axis.text.x = element_text(angle=45, hjust=1)) 
-   })
-   
-   output$f10 <- renderPlot({
-      ggplot(dataset[filter_free_10_days, ], aes(x=height, y=max_size-size_mb)) +
-         geom_point(aes(color=pool)) +
-         geom_hline(yintercept=1, color="red") +
-         theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) +
-         labs(title="Free space in blocks - 10 days analyzed.",
-              x ="Height", y = "Free space (MB)") +
-         annotate("text", x = Inf, y = Inf, label = paste0("valeriovaccaro.it"),
-                  hjust=1.1, vjust=1.1, col="black", cex=4,
-                  fontface = "bold", alpha = 0.3)
    })
    
    output$f1 <- renderPlot({
-      ggplot(dataset[filter_free_1_day, ], aes(x=height, y=max_size-size_mb)) +
+      ggplot(dataset[filter_free_1_day, ], aes(x=height, y=max_size_7-size_mb)) +
          geom_point(aes(color=pool)) +
          geom_hline(yintercept=1, color="red") +
          theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) +
-         labs(title="Free space in blocks - 10 days analyzed.",
+         labs(title="Free space in blocks - 1 day analyzed.",
               x ="Height", y = "Free space (MB)") +
          annotate("text", x = Inf, y = Inf, label = paste0("valeriovaccaro.it"),
                   hjust=1.1, vjust=1.1, col="black", cex=4,
-                  fontface = "bold", alpha = 0.3)
+                  fontface = "bold", alpha = 0.3) +
+         theme(axis.text.x = element_text(angle=45, hjust=1))
    })
    
    output$fee <- renderPlot({
