@@ -17,6 +17,7 @@ ui <- dashboardPage(
                 )
         ),
         dashboardBody(
+                tags$head(tags$link(rel = "shortcut icon", href = "http://vaccaro.tech/favicon.ico")),
                 tabItems(
                         # dashboard content
                         tabItem(tabName = "bitcoin_dashboard",

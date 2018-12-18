@@ -92,8 +92,8 @@ server <- function(input, output) {
          annotate("text", x = max(price_usd_day$timestamp), y = Inf, label = paste0(as.Date(anytime(today/1000)), " - valeriovaccaro.it"),
                   hjust=1.1, vjust=1.1, col="black", cex=4,
                   fontface = "bold", alpha = 0.3) +
-         ggtitle("BTC price value - 1 day") +
-         labs(y="Value [USD]", x="Date") +
+         ggtitle("BTC fiat price - 1 day") +
+         labs(y="Fiat price [USD]", x="Date") +
          theme(axis.text.x = element_text(angle=45, hjust=1))
    })
    
@@ -103,8 +103,8 @@ server <- function(input, output) {
          annotate("text", x = max(price_usd_day$value), y = Inf, label = paste0(as.Date(anytime(today/1000)), " - valeriovaccaro.it"),
                   hjust=1.1, vjust=1.1, col="black", cex=4,
                   fontface = "bold", alpha = 0.3) +
-         ggtitle("BTC price distribution - 1 day") +
-         labs(y="", x="Value [USD]") +
+         ggtitle("BTC fiat price distribution - 1 day") +
+         labs(y="", x="Fiat price [USD]") +
          scale_y_continuous(labels = scales::percent) +
          theme(axis.text.x = element_text(angle=45, hjust=1))
    })
@@ -128,8 +128,8 @@ server <- function(input, output) {
          annotate("text", x = max(price_usd_day$timestamp), y = Inf, label = paste0(as.Date(anytime(today/1000)), " - valeriovaccaro.it"),
                   hjust=1.1, vjust=1.1, col="black", cex=4,
                   fontface = "bold", alpha = 0.3) +
-         ggtitle("BTC price value - 1 week") +
-         labs(y="Value [USD]", x="Date") +
+         ggtitle("BTC fiat price - 1 week") +
+         labs(y="Fiat price [USD]", x="Date") +
          theme(axis.text.x = element_text(angle=45, hjust=1))
    })
    
@@ -139,8 +139,8 @@ server <- function(input, output) {
          annotate("text", x = max(price_usd_week$value), y = Inf, label = paste0(as.Date(anytime(today/1000)), " - valeriovaccaro.it"),
                   hjust=1.1, vjust=1.1, col="black", cex=4,
                   fontface = "bold", alpha = 0.3) +
-         ggtitle("BTC price distribution - 1 week") +
-         labs(y="", x="Value [USD]") +
+         ggtitle("BTC fiat price distribution - 1 week") +
+         labs(y="", x="Fiat price [USD]") +
          scale_y_continuous(labels = scales::percent) +
          theme(axis.text.x = element_text(angle=45, hjust=1))
    })
@@ -164,8 +164,8 @@ server <- function(input, output) {
          annotate("text", x = max(price_usd_day$timestamp), y = Inf, label = paste0(as.Date(anytime(today/1000)), " - valeriovaccaro.it"),
                   hjust=1.1, vjust=1.1, col="black", cex=4,
                   fontface = "bold", alpha = 0.3) +
-         ggtitle("BTC price value - 1 month") +
-         labs(y="Value [USD]", x="Date") +
+         ggtitle("BTC fiat price - 1 month") +
+         labs(y="Fiat price [USD]", x="Date") +
          theme(axis.text.x = element_text(angle=45, hjust=1))
    })
    
@@ -175,8 +175,8 @@ server <- function(input, output) {
          annotate("text", x = max(price_usd_month$value), y = Inf, label = paste0(as.Date(anytime(today/1000)), " - valeriovaccaro.it"),
                   hjust=1.1, vjust=1.1, col="black", cex=4,
                   fontface = "bold", alpha = 0.3) +
-         ggtitle("BTC price distribution - 1 month") +
-         labs(y="", x="Value [USD]") +
+         ggtitle("BTC fiat price - 1 month") +
+         labs(y="", x="Fiat price [USD]") +
          scale_y_continuous(labels = scales::percent) +
          theme(axis.text.x = element_text(angle=45, hjust=1))
    })
@@ -209,7 +209,7 @@ server <- function(input, output) {
    
    output$b30 <- renderPlot({
       ggplot(dataset[filter_30_days, ], aes(x=as.factor(pool), y=size_mb,  alpha=0.01)) +
-         geom_point(aes(color=pool)) +
+         geom_violin(aes(fill=pool)) +
          geom_hline(yintercept=1) +
          geom_text(data=data.frame(x=0,y=1),  aes(x, y), label="1MB", vjust=+2, hjust=-1) +
          labs(title="Distribution of blocks per pool - 30 days analyzed.",
@@ -235,7 +235,7 @@ server <- function(input, output) {
    
    output$b7 <- renderPlot({
       ggplot(dataset[filter_7_days, ], aes(x=as.factor(pool), y=size_mb,  alpha=0.01)) +
-         geom_point(aes(color=pool)) +
+         geom_violin(aes(fill=pool)) +
          geom_hline(yintercept=1) +
          geom_text(data=data.frame(x=0,y=1),  aes(x, y), label="1MB", vjust=+2, hjust=-1) +
          labs(title="Distribution of blocks per pool - 7 days analyzed.",
@@ -261,7 +261,7 @@ server <- function(input, output) {
    
    output$b1 <- renderPlot({
       ggplot(dataset[filter_1_day, ], aes(x=as.factor(pool), y=size_mb,  alpha=0.01)) +
-         geom_point(aes(color=pool)) +
+         geom_violin(aes(fill=pool)) +
          geom_hline(yintercept=1) +
          geom_text(data=data.frame(x=0,y=1),  aes(x, y), label="1MB", vjust=+2, hjust=-1) +
          labs(title="Distribution of blocks per pool - 1 day analyzed.",
